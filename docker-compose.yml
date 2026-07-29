@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  python-runtime:
+    build:
+      context: ./images/python
+      dockerfile: Dockerfile
+    image: judgelite/python:3.8
+    profiles: [ "build" ]
+
+  gcc-runtime:
+    build:
+      context: ./images/cpp
+      dockerfile: Dockerfile
+    image: judgelite/gcc:9
+    profiles: [ "build" ]
+  # 2. Main Worker (Waits until image-builder finishes running build_image.sh)
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker/Dockerfile
+    container_name: code_executor_worker
+    command: python -m app_queue.worker
+    volumes:
+      - ./app_queue:/app/app_queue
+      - ./code_file:/app/code_file
+      - ./compilation:/app/compilation
+      - ./routers:/app/routers
+      - ${TEMP}/code_executor:/app/temp_executions
+      - ./main.py:/app/main.py
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      redis:
+        condition: service_started
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+
+  # 3. Redis Queue Storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+

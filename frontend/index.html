@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Code Executor Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <span class="logo-icon">⚡</span>
+                <h1>Code Executor</h1>
+            </div>
+            <div class="controls">
+                <select id="languageSelect" class="select-input">
+                    <option value="cpp">C++ (GCC 9)</option>
+                    <option value="python">Python (3.8)</option>
+                </select>
+                <button id="runBtn" class="btn primary-btn">
+                    <span class="play-icon">▶</span> Run Code
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Left Side: Code Editor & Queue Submission -->
+            <section class="panel editor-panel">
+                <div class="panel-header">
+                    <h2>Source Code</h2>
+                </div>
+                <textarea id="codeEditor" spellcheck="false" placeholder="Write your code here..."></textarea>
+            </section>
+
+            <!-- Right Side: Input, Output & Queue Monitoring Dashboard -->
+            <section class="panel io-panel">
+                <!-- Input Section -->
+                <div class="io-box input-box">
+                    <div class="panel-header">
+                        <h2>Standard Input (stdin)</h2>
+                    </div>
+                    <textarea id="inputData" spellcheck="false" placeholder="Provide input data for your program..."></textarea>
+                </div>
+
+                <!-- Output Section -->
+                <div class="io-box output-box">
+                    <div class="panel-header">
+                        <h2>Output / Results</h2>
+                        <div id="metaInfo" class="meta-info"></div>
+                    </div>
+                    <div id="outputContainer" class="output-container">
+                        <pre id="outputConsole" class="console">Click "Run Code" to submit job to queue and monitor execution.</pre>
+                    </div>
+                </div>
+
+                <!-- Dashboard Section: Queue & Worker Monitor -->
+                <div class="io-box dashboard-box">
+                    <div class="panel-header">
+                        <h2>📊 Queue & Worker Monitor</h2>
+                        <button id="refreshStatsBtn" class="btn small-btn secondary-btn">🔄 Refresh</button>
+                    </div>
+                    <div class="dashboard-content">
+                        <!-- Stats Grid -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-value" id="statWaiting">0</span>
+                                <span class="stat-label">In Queue</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value processing-color" id="statActive">0</span>
+                                <span class="stat-label">Processing</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value success-color" id="statCompleted">0</span>
+                                <span class="stat-label">Completed</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value error-color" id="statFailed">0</span>
+                                <span class="stat-label">Failed</span>
+                            </div>
+                        </div>
+
+                        <!-- Active/Monitored Job Details -->
+                        <div class="monitored-job-card" id="monitoredJobCard">
+                            <div class="job-header">
+                                <span class="job-id-title">Job Status Monitor</span>
+                                <span class="badge" id="monitoredJobStatus">No Active Job</span>
+                            </div>
+                            <div class="job-actions" id="jobActions">
+                                <input type="text" id="customJobIdInput" placeholder="Enter Job ID to monitor/manage" class="select-input text-sm">
+                                <button id="fetchJobBtn" class="btn small-btn">Check</button>
+                                <button id="updateJobBtn" class="btn small-btn warning-btn">Update Status</button>
+                                <button id="deleteJobBtn" class="btn small-btn error-btn">Delete from Cache</button>
+                            </div>
+                            <div class="job-details-view" id="jobDetailsView">
+                                Select or submit a job to view real-time cache details.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js?v=4"></script>
+</body>
+</html>

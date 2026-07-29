@@ -1,0 +1,47 @@
+# Version Control Systems
+.git
+.gitignore
+.hg
+.svn
+
+# Heavy Local Dependencies
+node_modules/
+bower_components/
+venv/
+.venv/
+env/
+
+# Build Artifacts and Cache
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+*.pyc
+__pycache__/
+
+# Testing and Coverage Reports
+coverage/
+.nyc_output/
+htmlcov/
+
+# Sensitive Data and Environment Variables
+*.env
+*.env.*
+!.env.example
+*.pem
+*.key
+id_rsa
+secrets.*
+
+# Docker specific files (optional)
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+frontend
+images
+temp_executions
+docker
+scripts
