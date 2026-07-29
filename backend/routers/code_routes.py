@@ -14,7 +14,7 @@ async def code_submission(submission: dict):
         import uuid
         if "id" not in submission:
             submission["id"] = str(uuid.uuid4())
-            
+             
         result = await add_submission(submission)
         return result
     except Exception as e:

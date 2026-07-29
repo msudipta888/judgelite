@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Ensure backend root is in sys.path
+backend_dir = Path(__file__).resolve().parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -22,7 +30,10 @@ app.add_middleware(
 )
 
 app.include_router(code_routes.router)
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+from pathlib import Path
+
+frontend_path = Path(__file__).parent.parent / "frontend"
+app.mount("/", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
 
 if __name__ == "__main__":
     import uvicorn
@@ -31,5 +42,5 @@ if __name__ == "__main__":
         host="127.0.0.1",
         port=8000,
         reload=True,
-        reload_excludes=["temp_executions/*"]
+        app_dir=str(backend_dir)
     )

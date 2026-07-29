@@ -3,12 +3,14 @@ const SUBMIT_URL = `${API_BASE}/submission`;
 
 const boilerplates = {
     cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    if (cin >> a >> b) {\n        cout << "Sum is: " << (a + b) << endl;\n    }\n    return 0;\n}`,
-    python: `import sys\n\ndef main():\n    input_data = sys.stdin.read().split()\n    if input_data:\n        a, b = int(input_data[0]), int(input_data[1])\n        print(f"Sum is: {a + b}")\n\nif __name__ == "__main__":\n    main()`
+    python: `import sys\n\ndef main():\n    input_data = sys.stdin.read().split()\n    if input_data:\n        a, b = int(input_data[0]), int(input_data[1])\n        print(f"Sum is: {a + b}")\n\nif __name__ == "__main__":\n    main()`,
+    java: `public class Main {\n    public static void main(String[] args) {\n        java.util.Scanner sc = new java.util.Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int a = sc.nextInt();\n            int b = sc.nextInt();\n            System.out.println("Sum is: " + (a + b));\n        }\n    }\n}`
 };
 
 const defaultInputs = {
     cpp: "10 32\n",
-    python: "10 32\n"
+    python: "10 32\n",
+    java: "10 32\n"
 };
 
 const languageSelect = document.getElementById("languageSelect");
@@ -17,8 +19,17 @@ const inputData = document.getElementById("inputData");
 const runBtn = document.getElementById("runBtn");
 const outputConsole = document.getElementById("outputConsole");
 const metaInfo = document.getElementById("metaInfo");
+const editorStats = document.getElementById("editorStats");
+const resetCodeBtn = document.getElementById("resetCodeBtn");
 
-// Dashboard Elements
+// Side Monitor Panel Elements
+const sideMonitorPanel = document.getElementById("sideMonitorPanel");
+const sidePanelBackdrop = document.getElementById("sidePanelBackdrop");
+const toggleSidePanelBtn = document.getElementById("toggleSidePanelBtn");
+const closeSidePanelBtn = document.getElementById("closeSidePanelBtn");
+const headerQueueBadge = document.getElementById("headerQueueBadge");
+
+// Dashboard Counters
 const statWaiting = document.getElementById("statWaiting");
 const statActive = document.getElementById("statActive");
 const statCompleted = document.getElementById("statCompleted");
@@ -36,16 +47,63 @@ const jobDetailsView = document.getElementById("jobDetailsView");
 
 let activeJobPollInterval = null;
 
+// Side Panel Toggle Logic
+function openSidePanel() {
+    if (sideMonitorPanel) sideMonitorPanel.classList.add("open");
+    if (sidePanelBackdrop) sidePanelBackdrop.classList.add("open");
+}
+
+function closeSidePanel() {
+    if (sideMonitorPanel) sideMonitorPanel.classList.remove("open");
+    if (sidePanelBackdrop) sidePanelBackdrop.classList.remove("open");
+}
+
+if (toggleSidePanelBtn) {
+    toggleSidePanelBtn.addEventListener("click", () => {
+        if (sideMonitorPanel && sideMonitorPanel.classList.contains("open")) {
+            closeSidePanel();
+        } else {
+            openSidePanel();
+            fetchQueueStats();
+        }
+    });
+}
+
+if (closeSidePanelBtn) closeSidePanelBtn.addEventListener("click", closeSidePanel);
+if (sidePanelBackdrop) sidePanelBackdrop.addEventListener("click", closeSidePanel);
+
+// Update Line and Char counts
+function updateEditorStats() {
+    if (!editorStats) return;
+    const lines = codeEditor.value.split("\n").length;
+    const chars = codeEditor.value.length;
+    editorStats.textContent = `Lines: ${lines} | Chars: ${chars}`;
+}
+
 // Set initial content
 codeEditor.value = boilerplates.cpp;
 inputData.value = defaultInputs.cpp;
+updateEditorStats();
+
+codeEditor.addEventListener("input", updateEditorStats);
 
 // Handle language change
 languageSelect.addEventListener("change", (e) => {
     const lang = e.target.value;
     codeEditor.value = boilerplates[lang] || "";
     inputData.value = defaultInputs[lang] || "";
+    updateEditorStats();
 });
+
+// Reset button listener
+if (resetCodeBtn) {
+    resetCodeBtn.addEventListener("click", () => {
+        const lang = languageSelect.value;
+        codeEditor.value = boilerplates[lang] || "";
+        inputData.value = defaultInputs[lang] || "";
+        updateEditorStats();
+    });
+}
 
 // Fetch overall Queue Statistics (QueueStats)
 async function fetchQueueStats() {
@@ -54,10 +112,19 @@ async function fetchQueueStats() {
         if (res.ok) {
             const data = await res.json();
             const stats = data.submissions || data;
-            statWaiting.textContent = stats.in_queue ?? stats.waiting ?? 0;
-            statActive.textContent = stats.processing ?? stats.active ?? 0;
-            statCompleted.textContent = stats.completed ?? 0;
-            statFailed.textContent = stats.failed ?? 0;
+            const waiting = stats.in_queue ?? stats.waiting ?? 0;
+            const active = stats.processing ?? stats.active ?? 0;
+            const completed = stats.completed ?? 0;
+            const failed = stats.failed ?? 0;
+
+            statWaiting.textContent = waiting;
+            statActive.textContent = active;
+            statCompleted.textContent = completed;
+            statFailed.textContent = failed;
+
+            if (headerQueueBadge) {
+                headerQueueBadge.textContent = waiting + active;
+            }
         }
     } catch (e) {
         console.warn("Queue stats route not reachable yet or offline.");
@@ -104,7 +171,6 @@ async function checkJobStatus(jobId, displayInConsole = true) {
 function startPollingJob(jobId) {
     if (activeJobPollInterval) clearInterval(activeJobPollInterval);
 
-    // Immediately check status so UI monitor reflects queue state without waiting
     checkJobStatus(jobId, true);
 
     activeJobPollInterval = setInterval(async () => {
@@ -117,7 +183,7 @@ function startPollingJob(jobId) {
                 clearInterval(activeJobPollInterval);
                 activeJobPollInterval = null;
                 runBtn.disabled = false;
-                runBtn.innerHTML = `<span class="play-icon">▶</span> Run Code`;
+                runBtn.innerHTML = `<span class="btn-icon">▶</span> <span class="btn-text">Run Code</span>`;
             }
         }
     }, 500);
@@ -139,12 +205,11 @@ runBtn.addEventListener("click", async () => {
 
     // UI Loading state
     runBtn.disabled = true;
-    runBtn.innerHTML = `<span class="play-icon">⏳</span> Pushing to Queue...`;
+    runBtn.innerHTML = `<span class="btn-icon spinner">⏳</span> <span class="btn-text">Pushing to Queue...</span>`;
     outputConsole.className = "console";
     outputConsole.textContent = `Job ID: ${submissionId} submitted to BullMQ queue...\nWaiting for Worker to process...`;
     metaInfo.innerHTML = `<span class="badge badge-pending">Queued in Redis</span>`;
 
-    // Reset job monitor card instantly
     monitoredJobStatus.textContent = "Pending";
     monitoredJobStatus.className = "badge badge-pending";
     jobDetailsView.textContent = JSON.stringify({ status: "Pending", submission_id: submissionId }, null, 2);
@@ -167,14 +232,13 @@ runBtn.addEventListener("click", async () => {
 
         const data = await response.json();
         
-        // Start polling immediately
         startPollingJob(submissionId);
         fetchQueueStats();
     } catch (err) {
         outputConsole.className = "console error";
-        outputConsole.textContent = `Execution Request Failed: ${err.message}\nEnsure backend server (python main.py) is running on http://127.0.0.1:8000!`;
+        outputConsole.textContent = `Execution Request Failed: ${err.message}\nEnsure backend server (python backend/main.py) is running on http://127.0.0.1:8000!`;
         runBtn.disabled = false;
-        runBtn.innerHTML = `<span class="play-icon">▶</span> Run Code`;
+        runBtn.innerHTML = `<span class="btn-icon">▶</span> <span class="btn-text">Run Code</span>`;
     }
 });
 
@@ -278,5 +342,3 @@ function renderResult(data) {
 // Initial stats fetch on load
 fetchQueueStats();
 setInterval(fetchQueueStats, 3000);
-
-

@@ -39,15 +39,18 @@ class CodeExecution:
         
         select_image={
             "cpp":"judgelite/gcc:9",
-            "python":"judgelite/python:3.8"
+            "python":"judgelite/python:3.8",
+            "java":"judgelite/java:17"
         }
         select_compile_language={
             "cpp": Path(__file__).parent.parent/"compilation/cpp_compile.sh",
-            "python": Path(__file__).parent.parent/"compilation/python_compile.sh"
+            "python": Path(__file__).parent.parent/"compilation/python_compile.sh",
+            "java": Path(__file__).parent.parent/"compilation/java_compile.sh"
         }
         select_language_ext={
             "cpp":".cpp",
-            "python":".py"
+            "python":".py",
+            "java":".java"
         }
         if language not in select_image:
             return {"status": "Unsupported Language", "stdout": "", "stderr": "", "exit_code": None, "execution_time": 0}
@@ -60,8 +63,9 @@ class CodeExecution:
         host_work_dir = (temp_base_dir / folder_name).resolve() # D:code_executor/temp_execution/judge_1234567890ab
         host_work_dir.mkdir(parents=True, exist_ok=True)
 
-        host_src_file = host_work_dir / f"main{select_language_ext[language]}" # D:code_executor/temp_execution/judge_1234567890ab/main.cpp
-        host_input_file = host_work_dir / "input.txt" # D:code_executor/temp_execution/judge_1234567890ab/input.txt
+        filename = "Main.java" if language == "java" else f"main{select_language_ext[language]}"
+        host_src_file = host_work_dir / filename
+        host_input_file = host_work_dir / "input.txt"
         host_run_sh = host_work_dir / "run.sh" # D:code_executor/temp_execution/judge_1234567890ab/run.sh
         container = None
 

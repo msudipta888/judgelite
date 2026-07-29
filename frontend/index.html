@@ -4,111 +4,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>Code Executor Platform</title>
-    <link rel="stylesheet" href="style.css">
+    <title>JudgeLite - Online Code Execution Sandbox</title>
+    <meta name="description" content="High performance containerized online code execution platform with real-time BullMQ queue monitoring.">
+    <link rel="stylesheet" href="style.css?v=400">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
+        <!-- Main Top Navigation Header -->
         <header class="header">
             <div class="brand">
-                <span class="logo-icon">⚡</span>
-                <h1>Code Executor</h1>
+                <div class="logo-wrapper">
+                    <span class="logo-icon">⚡</span>
+                    <span class="pulse-dot"></span>
+                </div>
+                <div class="brand-text">
+                    <h1>JudgeLite <span class="brand-badge">PRO</span></h1>
+                    <span class="sub-title">Docker Sandbox Execution Engine</span>
+                </div>
             </div>
-            <div class="controls">
-                <select id="languageSelect" class="select-input">
-                    <option value="cpp">C++ (GCC 9)</option>
-                    <option value="python">Python (3.8)</option>
-                </select>
+
+            <div class="header-controls">
+                <div class="select-wrapper">
+                    <label for="languageSelect" class="sr-only">Select Language</label>
+                    <select id="languageSelect" class="select-input">
+                        <option value="cpp">⚡ C++ (GCC 9)</option>
+                        <option value="python">🐍 Python (3.8)</option>
+                        <option value="java">☕ Java (OpenJDK 17)</option>
+                    </select>
+                </div>
+
+                <button id="toggleSidePanelBtn" class="btn secondary-btn" title="Toggle Queue & Worker Monitor Side Panel">
+                    <span class="btn-icon">📊</span>
+                    <span class="btn-text">Queue Monitor</span>
+                    <span class="pill-badge" id="headerQueueBadge">0</span>
+                </button>
+
                 <button id="runBtn" class="btn primary-btn">
-                    <span class="play-icon">▶</span> Run Code
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-text">Run Code</span>
                 </button>
             </div>
         </header>
 
-        <!-- Main Workspace -->
+        <!-- Main Dynamic Workspace -->
         <main class="workspace">
-            <!-- Left Side: Code Editor & Queue Submission -->
+            <!-- Left Column: Source Code Editor -->
             <section class="panel editor-panel">
                 <div class="panel-header">
-                    <h2>Source Code</h2>
+                    <div class="panel-title">
+                        <span class="icon">📝</span>
+                        <h2>Source Code</h2>
+                    </div>
+                    <div class="editor-meta">
+                        <span id="editorStats" class="editor-stats">Lines: 1 | Chars: 0</span>
+                        <button id="resetCodeBtn" class="btn-ghost small-btn" title="Reset Code to Default">Reset</button>
+                    </div>
                 </div>
-                <textarea id="codeEditor" spellcheck="false" placeholder="Write your code here..."></textarea>
+                <div class="editor-container">
+                    <textarea id="codeEditor" spellcheck="false" placeholder="Write your code here..."></textarea>
+                </div>
             </section>
 
-            <!-- Right Side: Input, Output & Queue Monitoring Dashboard -->
-            <section class="panel io-panel">
-                <!-- Input Section -->
-                <div class="io-box input-box">
+            <!-- Right Column: Input & Output Console Only -->
+            <section class="panel-column io-column">
+                <!-- Top Right: Input (stdin) -->
+                <div class="panel io-panel input-panel">
                     <div class="panel-header">
-                        <h2>Standard Input (stdin)</h2>
+                        <div class="panel-title">
+                            <span class="icon">📥</span>
+                            <h2>Standard Input (stdin)</h2>
+                        </div>
                     </div>
-                    <textarea id="inputData" spellcheck="false" placeholder="Provide input data for your program..."></textarea>
+                    <div class="textarea-wrapper">
+                        <textarea id="inputData" spellcheck="false" placeholder="Provide input data for your program..."></textarea>
+                    </div>
                 </div>
 
-                <!-- Output Section -->
-                <div class="io-box output-box">
+                <!-- Bottom Right: Output / Results Console (Full Height) -->
+                <div class="panel io-panel output-panel">
                     <div class="panel-header">
-                        <h2>Output / Results</h2>
+                        <div class="panel-title">
+                            <span class="icon">💻</span>
+                            <h2>Execution Output</h2>
+                        </div>
                         <div id="metaInfo" class="meta-info"></div>
                     </div>
                     <div id="outputContainer" class="output-container">
-                        <pre id="outputConsole" class="console">Click "Run Code" to submit job to queue and monitor execution.</pre>
-                    </div>
-                </div>
-
-                <!-- Dashboard Section: Queue & Worker Monitor -->
-                <div class="io-box dashboard-box">
-                    <div class="panel-header">
-                        <h2>📊 Queue & Worker Monitor</h2>
-                        <button id="refreshStatsBtn" class="btn small-btn secondary-btn">🔄 Refresh</button>
-                    </div>
-                    <div class="dashboard-content">
-                        <!-- Stats Grid -->
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <span class="stat-value" id="statWaiting">0</span>
-                                <span class="stat-label">In Queue</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-value processing-color" id="statActive">0</span>
-                                <span class="stat-label">Processing</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-value success-color" id="statCompleted">0</span>
-                                <span class="stat-label">Completed</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-value error-color" id="statFailed">0</span>
-                                <span class="stat-label">Failed</span>
-                            </div>
-                        </div>
-
-                        <!-- Active/Monitored Job Details -->
-                        <div class="monitored-job-card" id="monitoredJobCard">
-                            <div class="job-header">
-                                <span class="job-id-title">Job Status Monitor</span>
-                                <span class="badge" id="monitoredJobStatus">No Active Job</span>
-                            </div>
-                            <div class="job-actions" id="jobActions">
-                                <input type="text" id="customJobIdInput" placeholder="Enter Job ID to monitor/manage" class="select-input text-sm">
-                                <button id="fetchJobBtn" class="btn small-btn">Check</button>
-                                <button id="updateJobBtn" class="btn small-btn warning-btn">Update Status</button>
-                                <button id="deleteJobBtn" class="btn small-btn error-btn">Delete from Cache</button>
-                            </div>
-                            <div class="job-details-view" id="jobDetailsView">
-                                Select or submit a job to view real-time cache details.
-                            </div>
-                        </div>
+                        <pre id="outputConsole" class="console">Click "Run Code" to dispatch submission to Docker sandbox queue.</pre>
                     </div>
                 </div>
             </section>
+
+            <!-- Slide-Out Side Drawer Panel: Queue & Worker Monitor -->
+            <aside id="sideMonitorPanel" class="side-monitor-panel">
+                <div class="side-panel-header">
+                    <div class="panel-title">
+                        <span class="icon">📊</span>
+                        <h2>Queue & Worker Monitor</h2>
+                    </div>
+                    <div class="side-header-actions">
+                        <button id="refreshStatsBtn" class="btn-ghost small-btn" title="Sync Queue Stats">
+                            <span class="spin-icon">🔄</span> Sync
+                        </button>
+                        <button id="closeSidePanelBtn" class="close-btn" title="Close Side Panel">✕</button>
+                    </div>
+                </div>
+
+                <div class="side-panel-content">
+                    <!-- Queue Counters Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card stat-waiting">
+                            <span class="stat-value" id="statWaiting">0</span>
+                            <span class="stat-label">In Queue</span>
+                        </div>
+                        <div class="stat-card stat-processing">
+                            <span class="stat-value" id="statActive">0</span>
+                            <span class="stat-label">Processing</span>
+                        </div>
+                        <div class="stat-card stat-completed">
+                            <span class="stat-value" id="statCompleted">0</span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                        <div class="stat-card stat-failed">
+                            <span class="stat-value" id="statFailed">0</span>
+                            <span class="stat-label">Failed</span>
+                        </div>
+                    </div>
+
+                    <!-- Active Monitored Job Card -->
+                    <div class="monitored-job-card" id="monitoredJobCard">
+                        <div class="job-header">
+                            <span class="job-id-title">Job Inspector</span>
+                            <span class="badge badge-pending" id="monitoredJobStatus">No Active Job</span>
+                        </div>
+                        <div class="job-input-row">
+                            <input type="text" id="customJobIdInput" placeholder="Enter Job ID..." class="text-input text-sm">
+                            <button id="fetchJobBtn" class="btn-action small-btn btn-check">Check</button>
+                        </div>
+                        <div class="job-button-row">
+                            <button id="updateJobBtn" class="btn-action small-btn btn-update">Update Status</button>
+                            <button id="deleteJobBtn" class="btn-action small-btn btn-delete">Delete Cache</button>
+                        </div>
+                        <pre class="job-details-view" id="jobDetailsView">Select or submit a job to view real-time cache state.</pre>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Backdrop Overlay when Side Drawer is Open -->
+            <div id="sidePanelBackdrop" class="side-panel-backdrop"></div>
         </main>
     </div>
 
-    <script src="script.js?v=4"></script>
+    <script src="script.js?v=400"></script>
 </body>
 </html>
