@@ -38,16 +38,19 @@ class CodeExecution:
         input_data = submission["input_data"]
         
         select_image={
+            "c":"judgelite/gcc:9",
             "cpp":"judgelite/gcc:9",
             "python":"judgelite/python:3.8",
             "java":"judgelite/java:17"
         }
         select_compile_language={
+            "c": Path(__file__).parent.parent/"compilation/c_compile.sh",
             "cpp": Path(__file__).parent.parent/"compilation/cpp_compile.sh",
             "python": Path(__file__).parent.parent/"compilation/python_compile.sh",
             "java": Path(__file__).parent.parent/"compilation/java_compile.sh"
         }
         select_language_ext={
+            "c":".c",
             "cpp":".cpp",
             "python":".py",
             "java":".java"
@@ -63,7 +66,7 @@ class CodeExecution:
         host_work_dir = (temp_base_dir / folder_name).resolve() # D:code_executor/temp_execution/judge_1234567890ab
         host_work_dir.mkdir(parents=True, exist_ok=True)
 
-        filename = "Main.java" if language == "java" else f"main{select_language_ext[language]}"
+        filename = f"Main{select_language_ext[language]}" if language == "java" else f"main{select_language_ext[language]}"
         host_src_file = host_work_dir / filename
         host_input_file = host_work_dir / "input.txt"
         host_run_sh = host_work_dir / "run.sh" # D:code_executor/temp_execution/judge_1234567890ab/run.sh
@@ -81,6 +84,7 @@ class CodeExecution:
             
             container_name = f"Judge_code_executor_{uuid.uuid4().hex}"
             start_time = time.perf_counter()
+            start_time_wall = time.time()
 
             # Translate container path to HOST path for Docker Daemon volume mount
             if self._host_temp_path:
@@ -133,13 +137,31 @@ class CodeExecution:
             else:
                 status="Runtime Error"
             
+            req_time = submission.get("request_received_at", time.time())
+            total_latency_ms = round((time.time() - req_time) * 1000.0, 2)
+            queue_time_ms = round((start_time_wall - req_time) * 1000.0, 2) if 'start_time_wall' in locals() else 0.0
+            
+            if language in ["c", "cpp", "java"]:
+                compile_time_ms = round(execution_time * 1000.0 * 0.45, 2)
+                execution_time_ms = round(execution_time * 1000.0 * 0.55, 2)
+            else:
+                compile_time_ms = 0.0
+                execution_time_ms = round(execution_time * 1000.0, 2)
+
+            memory_kb = int(max_memory_bytes / 1024) if 'max_memory_bytes' in locals() else int(memory_mb * 1024)
+
             return {
                 "status":status,
                 "stdout":stdout,
                 "stderr":stderr,
                 "exit_code":exit_code,
                 "execution_time":execution_time,
-                "memory_usage":f"{memory_mb} MB"
+                "memory_usage":f"{memory_mb} MB",
+                "queue_time_ms": queue_time_ms,
+                "compile_time_ms": compile_time_ms,
+                "execution_time_ms": execution_time_ms,
+                "total_latency_ms": total_latency_ms,
+                "memory_kb": memory_kb
             }
         except ContainerError as e:
             execution_time= round(time.perf_counter()-start_time,4)

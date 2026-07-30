@@ -2,6 +2,7 @@ from bullmq import Queue
 import redis
 import json
 import os
+import time
 
 redis_client: redis.Redis = None
 submissionQueue: Queue = None
@@ -52,6 +53,8 @@ async def add_submission(submission:dict):
     "status":"Pending",
      "submission": submission
    }
+    if "request_received_at" not in submission:
+        submission["request_received_at"] = time.time()
     submission_id=str(submission["id"])
     # store initail submission state in redis
     redis_client.setex(

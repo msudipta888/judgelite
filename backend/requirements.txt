@@ -4,3 +4,7 @@ pydantic
 bullmq
 redis
 python-dotenv
+locust
+matplotlib
+pandas
+uvicorn

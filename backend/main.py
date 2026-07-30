@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-
+import os
 # Ensure backend root is in sys.path
 backend_dir = Path(__file__).resolve().parent
 if str(backend_dir) not in sys.path:
@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from routers import code_routes
 from app_queue.job.producer import initialze_queue
 from contextlib import asynccontextmanager
-
+PORT=int(os.getenv("PORT"))
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Initialize Queue Producer connection
@@ -39,8 +39,8 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "main:app",
-        host="127.0.0.1",
-        port=8000,
+        host="[IP_ADDRESS]",
+        port=PORT,
         reload=True,
         app_dir=str(backend_dir)
     )
