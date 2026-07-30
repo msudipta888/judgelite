@@ -1,4 +1,6 @@
-# ⚡ JudgeLite (`code_executor`)
+<div align="center">
+  <h1>⚡ JudgeLite</h1>
+</div>
 
 > **Distributed, High-Performance Remote Code Execution Engine & Online Judge Platform**
 
@@ -160,16 +162,16 @@ JudgeLite was evaluated using an automated Locust load-testing suite across **60
 ### Benchmark Visualizations
 
 #### 1. Latency Breakdown (Queue vs Compile vs Execution Time)
-![Latency Breakdown](backend/benchmark/results/latency_breakdown.png)
+![Latency Breakdown](backend/results/latency_breakdown.png)
 
 #### 2. Throughput & Requests Per Second (RPS)
-![Throughput RPS](backend/benchmark/results/throughput_rps.png)
+![Throughput RPS](backend/results/throughput_rps.png)
 
 #### 3. Per-Language Latency Comparison
-![Language Comparison](backend/benchmark/results/language_comparison.png)
+![Language Comparison](backend/results/language_comparison.png)
 
 #### 4. Status & Failure Rate Analysis
-![Failure Rates](backend/benchmark/results/failure_rates.png)
+![Failure Rates](backend/results/failure_rates.png)
 
 ---
 
