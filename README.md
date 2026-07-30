@@ -170,8 +170,8 @@ JudgeLite was evaluated using an automated Locust load-testing suite across **60
 #### 3. Per-Language Latency Comparison
 ![Language Comparison](backend/results/language_comparison.png)
 
-#### 4. Status & Failure Rate Analysis
-![Failure Rates](backend/results/failure_rates.png)
+#### 4. Latency Percentiles (p90, p95, p99)
+![Latency Percentiles](backend/results/latency_percentiles.png)
 
 ---
 
