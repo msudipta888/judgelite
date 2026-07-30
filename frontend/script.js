@@ -2,12 +2,14 @@ const API_BASE = "http://127.0.0.1:8000/route";
 const SUBMIT_URL = `${API_BASE}/submission`;
 
 const boilerplates = {
+    c: `#include <stdio.h>\n\nint main() {\n    int a, b;\n    if (scanf("%d %d", &a, &b) == 2) {\n        printf("Sum is: %d\\n", a + b);\n    }\n    return 0;\n}`,
     cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    if (cin >> a >> b) {\n        cout << "Sum is: " << (a + b) << endl;\n    }\n    return 0;\n}`,
     python: `import sys\n\ndef main():\n    input_data = sys.stdin.read().split()\n    if input_data:\n        a, b = int(input_data[0]), int(input_data[1])\n        print(f"Sum is: {a + b}")\n\nif __name__ == "__main__":\n    main()`,
     java: `public class Main {\n    public static void main(String[] args) {\n        java.util.Scanner sc = new java.util.Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int a = sc.nextInt();\n            int b = sc.nextInt();\n            System.out.println("Sum is: " + (a + b));\n        }\n    }\n}`
 };
 
 const defaultInputs = {
+    c: "10 32\n",
     cpp: "10 32\n",
     python: "10 32\n",
     java: "10 32\n"
@@ -81,8 +83,8 @@ function updateEditorStats() {
 }
 
 // Set initial content
-codeEditor.value = boilerplates.cpp;
-inputData.value = defaultInputs.cpp;
+codeEditor.value = boilerplates.c;
+inputData.value = defaultInputs.c;
 updateEditorStats();
 
 codeEditor.addEventListener("input", updateEditorStats);

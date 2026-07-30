@@ -47,10 +47,16 @@ services:
     image: redis:7-alpine
     ports:
       - 6379:6379
+    command: redis-server --maxmemory 768mb --maxmemory-policy noeviction
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1024M # Hard cap for the Docker container
+        reservations:
+          memory: 256M # Minimum RAM guaranteed to the container
 
 volumes:
   redis_data:

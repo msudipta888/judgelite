@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # 1. Redis Queue Service
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 768mb --maxmemory-policy noeviction
+    ports:
+      - "6379:6379"
+    networks:
+      - judgelite-net
+    volumes:
+      - redis_data:/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 256M
+
+  # 2. Worker Service (Scalable across Swarm)
+  worker:
+    image: code_executor-worker:latest
+    command: python -m app_queue.worker
+    networks:
+      - judgelite-net
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${TEMP}/code_executor:/app/temp_executions
+    deploy:
+      replicas: 3 # Default number of worker instances
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+
+networks:
+  judgelite-net:
+    driver: overlay
+    attachable: true
+
+volumes:
+  redis_data:

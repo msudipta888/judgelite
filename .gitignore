@@ -11,3 +11,4 @@ wheels/
 .env
 # Temporary execution sandboxes
 temp_executions/
+backend/benchmark
